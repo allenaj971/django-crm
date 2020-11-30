@@ -1,7 +1,27 @@
 from django.shortcuts import render, redirect
-from .models import *
+from .filters import *
 from .forms import *
 from django.forms import inlineformset_factory
+from django.contrib.auth.forms import UserCreationForm
+from .forms import *
+
+
+def register(request):
+    form = CreateUserForm()
+
+    if request.method == "POST":
+        form = CreateUserForm(request.POST)
+        if form.is_valid():
+            form.save()
+
+    context = {'form': form}
+    return render(request, 'accounts/register.html', context)
+
+
+def login(request):
+    context = {}
+    return render(request, 'accounts/login.html', context)
+
 
 def home(request):
     orders = Order.objects.all()
@@ -18,9 +38,11 @@ def home(request):
 
     return render(request, 'accounts/dashboard.html', context)
 
+
 def products(request):
     products = Product.objects.all()
     return render(request, 'accounts/products.html', {'products': products})
+
 
 def customer(request, pk):
     customer = Customer.objects.get(id=pk)
@@ -29,8 +51,13 @@ def customer(request, pk):
     order_count = orders.count()
     customer_id = orders.filter(customer=customer)
 
-    context = {'customer': customer, 'orders': orders, 'order_count': order_count, 'customer_id': customer_id}
+    myFilter = OrderFilter(request.GET, queryset=orders)
+    orders = myFilter.qs
+
+    context = {'customer': customer, 'orders': orders, 'order_count': order_count, 'customer_id': customer_id,
+               'myFilter': myFilter}
     return render(request, 'accounts/customer.html', context)
+
 
 def createOrder(request, pk):
     OrderFormSet = inlineformset_factory(Customer, Order, fields=('product','status'), extra=5)
@@ -49,6 +76,7 @@ def createOrder(request, pk):
     context = {'formset': formset}
     return render(request, 'accounts/order_form.html', context)
 
+
 def updateOrder(request, pk):
     order = Order.objects.get(id=pk)
     form = OrderForm(instance=order)
@@ -62,6 +90,7 @@ def updateOrder(request, pk):
 
     context = {'form': form}
     return render(request, 'accounts/order_form.html', context)
+
 
 def deleteOrder(request, pk):
     order = Order.objects.get(id=pk)
