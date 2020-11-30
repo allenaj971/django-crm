@@ -28,7 +28,7 @@ class Product(models.Model):
     tags = models.ManyToManyField(Tag)
 
     def __str__(self):
-        return "%s: %s Tag" % (self.name, self.category)
+        return "%s" % (self.name)
 
 class Order(models.Model):
     STATUS = (
@@ -42,5 +42,5 @@ class Order(models.Model):
     status = models.CharField(max_length=200, null=True, choices=STATUS)
 
     def __str__(self):
-        return "%s: %s - %s" % (self.customer, self.product, self.status)
+        return "%s: %s" % (self.customer, self.product)
 # Create your models here.
